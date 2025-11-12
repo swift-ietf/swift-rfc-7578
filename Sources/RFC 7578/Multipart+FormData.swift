@@ -86,9 +86,8 @@ extension RFC_2046.Multipart {
             if let contentType = file.contentType {
                 headers["Content-Type"] = contentType.headerValue
             }
-            if let encoding = file.transferEncoding {
-                headers["Content-Transfer-Encoding"] = encoding.headerValue
-            }
+            // Note: Content-Transfer-Encoding not added per RFC 7578 §4.7
+            // HTTP supports binary data natively
 
             parts.append(
                 RFC_2046.BodyPart(
@@ -183,10 +182,10 @@ extension RFC_7578.FormData {
         /// The content type (optional but recommended for files)
         public let contentType: RFC_2045.ContentType?
 
-        /// The transfer encoding (defaults to `.base64` for binary files)
-        public let transferEncoding: RFC_2045.ContentTransferEncoding?
-
         /// The file content (binary data)
+        ///
+        /// RFC 7578 Section 4.7: Content-Transfer-Encoding is deprecated for HTTP contexts.
+        /// HTTP supports binary data natively, so no encoding is applied.
         public let content: Data
 
         /// Creates a form file upload
@@ -195,16 +194,17 @@ extension RFC_7578.FormData {
         ///   - fieldName: Form field name (e.g., "avatar")
         ///   - filename: Original filename (e.g., "photo.jpg")
         ///   - contentType: MIME type (recommended, e.g., `image/jpeg`)
-        ///   - transferEncoding: Transfer encoding (defaults to `.base64` for binary files)
-        ///   - content: File content (binary data)
+        ///   - content: File content (binary data, no encoding applied per RFC 7578 §4.7)
         ///
         /// - Throws: `RFC_7578.FormData.Error.emptyFieldName` if fieldName is empty
         /// - Throws: `RFC_7578.FormData.Error.emptyFilename` if filename is empty
+        ///
+        /// - Note: RFC 7578 Section 4.7 states that Content-Transfer-Encoding is deprecated
+        ///   for HTTP contexts because HTTP supports binary data natively.
         public init(
             fieldName: String,
             filename: String,
             contentType: RFC_2045.ContentType? = nil,
-            transferEncoding: RFC_2045.ContentTransferEncoding? = .base64,
             content: Data
         ) throws {
             guard !fieldName.isEmpty else {
@@ -217,7 +217,6 @@ extension RFC_7578.FormData {
             self.fieldName = fieldName
             self.filename = filename
             self.contentType = contentType
-            self.transferEncoding = transferEncoding
             self.content = content
         }
     }

@@ -43,24 +43,6 @@ struct ReadmeVerificationTests {
         #expect(formData.subtype == .formData)
     }
 
-    @Test("Example from source: File with Transfer Encoding")
-    func exampleFileWithTransferEncoding() throws {
-        // From Multipart+FormData.swift lines 166-175
-        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
-
-        let file = try RFC_7578.FormData.File(
-            fieldName: "avatar",
-            filename: "photo.jpg",
-            contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
-            content: imageData
-            // transferEncoding defaults to .base64
-        )
-
-        #expect(file.transferEncoding == .base64)
-        #expect(file.fieldName == "avatar")
-        #expect(file.filename == "photo.jpg")
-    }
-
     @Test("Validation: Empty Field Name Throws Error")
     func validationEmptyFieldNameThrowsError() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
