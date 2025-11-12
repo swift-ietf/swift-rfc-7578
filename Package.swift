@@ -17,8 +17,8 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-standards/swift-rfc-2045", branch: "main"),
-        .package(url: "https://github.com/swift-standards/swift-rfc-2046", branch: "main")
+        .package(url: "https://github.com/swift-standards/swift-rfc-2045", from: "0.1.0"),
+        .package(url: "https://github.com/swift-standards/swift-rfc-2046", from: "0.1.0")
     ],
     targets: [
         .target(
