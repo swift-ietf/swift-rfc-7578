@@ -1,0 +1,224 @@
+import Foundation
+import RFC_2045
+import RFC_2046
+
+// MARK: - RFC 7578: Multipart/Form-Data
+
+extension RFC_2046.Multipart.Subtype {
+    /// Form data with file uploads
+    ///
+    /// Used in HTTP POST requests with file uploads.
+    /// Each part has a `Content-Disposition: form-data` header
+    /// with the form field name.
+    ///
+    /// **RFC 7578** - Returning Values from Forms: multipart/form-data
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let formData = try RFC_2046.Multipart.formData(
+    ///     fields: ["username": "john_doe"],
+    ///     files: [...]
+    /// )
+    /// ```
+    public static let formData = RFC_2046.Multipart.Subtype(rawValue: "form-data")
+}
+
+extension RFC_2046.Multipart {
+    /// Creates a multipart/form-data message
+    ///
+    /// Used for HTTP POST requests with file uploads.
+    /// Each part should have a Content-Disposition header with the form field name.
+    ///
+    /// **RFC 7578** - Returning Values from Forms: multipart/form-data
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let formData = try RFC_2046.Multipart.formData(
+    ///     fields: [
+    ///         "username": "john_doe",
+    ///         "email": "john@example.com"
+    ///     ],
+    ///     files: [
+    ///         try RFC_7578.FormData.File(
+    ///             fieldName: "avatar",
+    ///             filename: "photo.jpg",
+    ///             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
+    ///             content: imageData
+    ///         )
+    ///     ]
+    /// )
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - fields: Text form fields
+    ///   - files: File upload parts (optional)
+    ///   - boundary: Custom boundary (auto-generated if nil)
+    /// - Throws: `RFC_2046.MultipartError` if validation fails
+    public static func formData(
+        fields: [String: String],
+        files: [RFC_7578.FormData.File] = [],
+        boundary: String? = nil
+    ) throws -> Self {
+        var parts: [RFC_2046.BodyPart] = []
+
+        // Add text fields
+        for (name, value) in fields.sorted(by: { $0.key < $1.key }) {
+            parts.append(
+                RFC_2046.BodyPart(
+                    headers: [
+                        "Content-Disposition": Self.escapeContentDisposition(name: name)
+                    ],
+                    text: value
+                )
+            )
+        }
+
+        // Add file uploads
+        for file in files {
+            var headers: [String: String] = [
+                "Content-Disposition": Self.escapeContentDisposition(
+                    name: file.fieldName,
+                    filename: file.filename
+                )
+            ]
+            if let contentType = file.contentType {
+                headers["Content-Type"] = contentType.headerValue
+            }
+            if let encoding = file.transferEncoding {
+                headers["Content-Transfer-Encoding"] = encoding.headerValue
+            }
+
+            parts.append(
+                RFC_2046.BodyPart(
+                    headers: headers,
+                    content: file.content
+                )
+            )
+        }
+
+        return try Self(
+            subtype: .formData,
+            parts: parts,
+            boundary: boundary
+        )
+    }
+
+    /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
+    ///
+    /// Properly quotes field names and filenames, escaping special characters.
+    ///
+    /// - Parameters:
+    ///   - name: Form field name
+    ///   - filename: Optional filename
+    /// - Returns: Escaped Content-Disposition header value
+    private static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
+        let escapedName = name.replacingOccurrences(of: "\"", with: "\\\"")
+        var result = "form-data; name=\"\(escapedName)\""
+
+        if let filename = filename {
+            let escapedFilename = filename.replacingOccurrences(of: "\"", with: "\\\"")
+            result += "; filename=\"\(escapedFilename)\""
+        }
+
+        return result
+    }
+}
+
+// MARK: - RFC 7578 FormData
+
+public enum RFC_7578 {
+    public enum FormData {
+        /// Errors that can occur when working with form-data
+        public enum Error: Swift.Error, Hashable, Sendable {
+            case emptyFieldName
+            case emptyFilename
+        }
+    }
+}
+
+// MARK: - LocalizedError Conformance
+
+extension RFC_7578.FormData.Error: LocalizedError {
+    public var errorDescription: String? {
+        switch self {
+        case .emptyFieldName:
+            return "Form field name must not be empty (RFC 7578)"
+        case .emptyFilename:
+            return
+                "Filename must not be empty for file uploads. Use the 'fields' parameter for text form fields."
+        }
+    }
+}
+
+extension RFC_7578.FormData {
+    /// Represents a file upload in multipart/form-data
+    ///
+    /// RFC 7578: File uploads SHOULD include a filename parameter.
+    /// For text form fields (no file), use the `fields` parameter in `.formData()` instead.
+    ///
+    /// Binary files should use `.base64` transfer encoding (the default).
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let imageData = try Data(contentsOf: URL(fileURLWithPath: "photo.jpg"))
+    ///
+    /// let file = RFC_7578.FormData.File(
+    ///     fieldName: "avatar",
+    ///     filename: "photo.jpg",
+    ///     contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
+    ///     content: imageData
+    ///     // transferEncoding defaults to .base64
+    /// )
+    /// ```
+    public struct File: Hashable, Sendable, Codable {
+        /// The form field name (required per RFC 7578)
+        public let fieldName: String
+
+        /// The filename (required for file uploads per RFC 7578)
+        public let filename: String
+
+        /// The content type (optional but recommended for files)
+        public let contentType: RFC_2045.ContentType?
+
+        /// The transfer encoding (defaults to `.base64` for binary files)
+        public let transferEncoding: RFC_2045.ContentTransferEncoding?
+
+        /// The file content (binary data)
+        public let content: Data
+
+        /// Creates a form file upload
+        ///
+        /// - Parameters:
+        ///   - fieldName: Form field name (e.g., "avatar")
+        ///   - filename: Original filename (e.g., "photo.jpg")
+        ///   - contentType: MIME type (recommended, e.g., `image/jpeg`)
+        ///   - transferEncoding: Transfer encoding (defaults to `.base64` for binary files)
+        ///   - content: File content (binary data)
+        ///
+        /// - Throws: `RFC_7578.FormData.Error.emptyFieldName` if fieldName is empty
+        /// - Throws: `RFC_7578.FormData.Error.emptyFilename` if filename is empty
+        public init(
+            fieldName: String,
+            filename: String,
+            contentType: RFC_2045.ContentType? = nil,
+            transferEncoding: RFC_2045.ContentTransferEncoding? = .base64,
+            content: Data
+        ) throws {
+            guard !fieldName.isEmpty else {
+                throw RFC_7578.FormData.Error.emptyFieldName
+            }
+            guard !filename.isEmpty else {
+                throw RFC_7578.FormData.Error.emptyFilename
+            }
+
+            self.fieldName = fieldName
+            self.filename = filename
+            self.contentType = contentType
+            self.transferEncoding = transferEncoding
+            self.content = content
+        }
+    }
+}
