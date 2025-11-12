@@ -106,13 +106,38 @@ extension RFC_2046.Multipart {
 
     /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
     ///
-    /// Properly quotes field names and filenames, escaping special characters.
+    /// Properly quotes field names and filenames, escaping special characters
+    /// (specifically double quotes) in multipart/form-data contexts.
+    ///
+    /// ## Usage
+    ///
+    /// ```swift
+    /// // Simple field name
+    /// let header1 = RFC_2046.Multipart.escapeContentDisposition(name: "username")
+    /// // Result: "form-data; name=\"username\""
+    ///
+    /// // Field with filename
+    /// let header2 = RFC_2046.Multipart.escapeContentDisposition(
+    ///     name: "avatar",
+    ///     filename: "photo.jpg"
+    /// )
+    /// // Result: "form-data; name=\"avatar\"; filename=\"photo.jpg\""
+    ///
+    /// // Escaping special characters
+    /// let header3 = RFC_2046.Multipart.escapeContentDisposition(
+    ///     name: "field\"with\"quotes"
+    /// )
+    /// // Result: "form-data; name=\"field\\\"with\\\"quotes\""
+    /// ```
     ///
     /// - Parameters:
-    ///   - name: Form field name
-    ///   - filename: Optional filename
-    /// - Returns: Escaped Content-Disposition header value
-    private static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
+    ///   - name: Form field name (will be escaped and quoted)
+    ///   - filename: Optional filename (will be escaped and quoted if provided)
+    /// - Returns: Complete Content-Disposition header value for form-data
+    ///
+    /// - Note: This method is public to allow downstream packages to properly
+    ///   construct Content-Disposition headers without duplicating the escaping logic.
+    public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
         let escapedName = name.replacingOccurrences(of: "\"", with: "\\\"")
         var result = "form-data; name=\"\(escapedName)\""
 
@@ -122,6 +147,23 @@ extension RFC_2046.Multipart {
         }
 
         return result
+    }
+}
+
+// MARK: - Convenience Accessor
+
+extension RFC_7578.FormData {
+    /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
+    ///
+    /// Convenience accessor to `RFC_2046.Multipart.escapeContentDisposition`.
+    /// See that method for full documentation and examples.
+    ///
+    /// - Parameters:
+    ///   - name: Form field name
+    ///   - filename: Optional filename
+    /// - Returns: Escaped Content-Disposition header value
+    public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
+        RFC_2046.Multipart.escapeContentDisposition(name: name, filename: filename)
     }
 }
 
