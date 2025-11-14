@@ -263,3 +263,53 @@ extension RFC_7578.FormData {
         }
     }
 }
+
+// MARK: - Form Field Extraction
+
+extension RFC_2046.Multipart {
+    /// Extracts form field values from multipart/form-data
+    ///
+    /// Parses Content-Disposition headers to extract field names and values
+    /// per RFC 7578 specification.
+    ///
+    /// - Returns: Dictionary mapping field names to their text values
+    /// - Note: Only extracts text fields, ignores file uploads
+    ///
+    /// ## Usage
+    ///
+    /// ```swift
+    /// let multipart = try RFC_2046.Multipart.parse(string, boundary: "---boundary")
+    /// let fields = multipart.extractFormFields()
+    /// // fields = ["name": "value", ...]
+    /// ```
+    public func extractFormFields() -> [String: String] {
+        var fields: [String: String] = [:]
+
+        for part in parts {
+            // Extract field name from Content-Disposition header
+            guard let disposition = part.headers["Content-Disposition"],
+                  disposition.contains("form-data"),
+                  let nameRange = disposition.range(of: "name=\""),
+                  let textContent = part.textContent else {
+                continue
+            }
+
+            // Extract field name
+            let afterName = disposition[nameRange.upperBound...]
+            guard let endQuote = afterName.firstIndex(of: "\"") else {
+                continue
+            }
+            let fieldName = String(afterName[..<endQuote])
+                .replacingOccurrences(of: "\\\"", with: "\"") // Unescape quotes
+
+            // Skip file uploads (have filename parameter)
+            if disposition.contains("filename=") {
+                continue
+            }
+
+            fields[fieldName] = textContent
+        }
+
+        return fields
+    }
+}
