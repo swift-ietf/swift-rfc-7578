@@ -41,7 +41,7 @@ extension RFC_2046.Multipart {
     ///         "email": "john@example.com"
     ///     ],
     ///     files: [
-    ///         try RFC_7578.FormData.File(
+    ///         try RFC_7578.Form.Data.File(
     ///             fieldName: "avatar",
     ///             filename: "photo.jpg",
     ///             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
@@ -58,7 +58,7 @@ extension RFC_2046.Multipart {
     /// - Throws: `RFC_2046.MultipartError` if validation fails
     public static func formData(
         fields: [String: String],
-        files: [RFC_7578.FormData.File] = [],
+        files: [RFC_7578.Form.Data.File] = [],
         boundary: String? = nil
     ) throws -> Self {
         var parts: [RFC_2046.BodyPart] = []
@@ -152,7 +152,7 @@ extension RFC_2046.Multipart {
 
 // MARK: - Convenience Accessor
 
-extension RFC_7578.FormData {
+extension RFC_7578.Form.Data {
     /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
     ///
     /// Convenience accessor to `RFC_2046.Multipart.escapeContentDisposition`.
@@ -167,21 +167,29 @@ extension RFC_7578.FormData {
     }
 }
 
-// MARK: - RFC 7578 FormData
+// MARK: - RFC 7578 Namespace
 
-public enum RFC_7578 {
-    public enum FormData {
-        /// Errors that can occur when working with form-data
-        public enum Error: Swift.Error, Hashable, Sendable {
-            case emptyFieldName
-            case emptyFilename
-        }
+public enum RFC_7578 {}
+
+extension RFC_7578 {
+    public enum Form {}
+}
+
+extension RFC_7578.Form {
+    public enum Data {}
+}
+
+extension RFC_7578.Form.Data {
+    /// Errors that can occur when working with form-data
+    public enum Error: Swift.Error, Hashable, Sendable {
+        case emptyFieldName
+        case emptyFilename
     }
 }
 
 // MARK: - LocalizedError Conformance
 
-extension RFC_7578.FormData.Error: LocalizedError {
+extension RFC_7578.Form.Data.Error: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .emptyFieldName:
@@ -193,7 +201,7 @@ extension RFC_7578.FormData.Error: LocalizedError {
     }
 }
 
-extension RFC_7578.FormData {
+extension RFC_7578.Form.Data {
     /// Represents a file upload in multipart/form-data
     ///
     /// RFC 7578: File uploads SHOULD include a filename parameter.
@@ -206,7 +214,7 @@ extension RFC_7578.FormData {
     /// ```swift
     /// let imageData = try Data(contentsOf: URL(fileURLWithPath: "photo.jpg"))
     ///
-    /// let file = RFC_7578.FormData.File(
+    /// let file = RFC_7578.Form.Data.File(
     ///     fieldName: "avatar",
     ///     filename: "photo.jpg",
     ///     contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
@@ -238,8 +246,8 @@ extension RFC_7578.FormData {
         ///   - contentType: MIME type (recommended, e.g., `image/jpeg`)
         ///   - content: File content (binary data, no encoding applied per RFC 7578 §4.7)
         ///
-        /// - Throws: `RFC_7578.FormData.Error.emptyFieldName` if fieldName is empty
-        /// - Throws: `RFC_7578.FormData.Error.emptyFilename` if filename is empty
+        /// - Throws: `RFC_7578.Form.Data.Error.emptyFieldName` if fieldName is empty
+        /// - Throws: `RFC_7578.Form.Data.Error.emptyFilename` if filename is empty
         ///
         /// - Note: RFC 7578 Section 4.7 states that Content-Transfer-Encoding is deprecated
         ///   for HTTP contexts because HTTP supports binary data natively.
@@ -250,10 +258,10 @@ extension RFC_7578.FormData {
             content: Data
         ) throws {
             guard !fieldName.isEmpty else {
-                throw RFC_7578.FormData.Error.emptyFieldName
+                throw RFC_7578.Form.Data.Error.emptyFieldName
             }
             guard !filename.isEmpty else {
-                throw RFC_7578.FormData.Error.emptyFilename
+                throw RFC_7578.Form.Data.Error.emptyFilename
             }
 
             self.fieldName = fieldName

@@ -27,7 +27,7 @@ struct ReadmeVerificationTests {
         // From Multipart+FormData.swift lines 43-51
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Mock JPEG header
 
-        let file = try RFC_7578.FormData.File(
+        let file = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
             filename: "photo.jpg",
             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
@@ -47,8 +47,8 @@ struct ReadmeVerificationTests {
     func validationEmptyFieldNameThrowsError() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
 
-        #expect(throws: RFC_7578.FormData.Error.emptyFieldName) {
-            try RFC_7578.FormData.File(
+        #expect(throws: RFC_7578.Form.Data.Error.emptyFieldName) {
+            try RFC_7578.Form.Data.File(
                 fieldName: "",
                 filename: "photo.jpg",
                 contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
@@ -61,8 +61,8 @@ struct ReadmeVerificationTests {
     func validationEmptyFilenameThrowsError() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
 
-        #expect(throws: RFC_7578.FormData.Error.emptyFilename) {
-            try RFC_7578.FormData.File(
+        #expect(throws: RFC_7578.Form.Data.Error.emptyFilename) {
+            try RFC_7578.Form.Data.File(
                 fieldName: "avatar",
                 filename: "",
                 contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
@@ -89,14 +89,14 @@ struct ReadmeVerificationTests {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
         let textData = Data("test content".utf8)
 
-        let imageFile = try RFC_7578.FormData.File(
+        let imageFile = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
             filename: "photo.jpg",
             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
             content: imageData
         )
 
-        let textFile = try RFC_7578.FormData.File(
+        let textFile = try RFC_7578.Form.Data.File(
             fieldName: "document",
             filename: "readme.txt",
             contentType: RFC_2045.ContentType(type: "text", subtype: "plain"),
