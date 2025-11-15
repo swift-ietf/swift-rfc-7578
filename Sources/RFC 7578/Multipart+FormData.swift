@@ -1,6 +1,7 @@
 import Foundation
 import RFC_2045
 import RFC_2046
+import RFC_2183
 
 // MARK: - RFC 7578: Multipart/Form-Data
 
@@ -67,9 +68,7 @@ extension RFC_2046.Multipart {
         for (name, value) in fields.sorted(by: { $0.key < $1.key }) {
             parts.append(
                 RFC_2046.BodyPart(
-                    headers: [
-                        "Content-Disposition": Self.escapeContentDisposition(name: name)
-                    ],
+                    headers: .formDataTextField(name: name),
                     text: value
                 )
             )
@@ -77,21 +76,15 @@ extension RFC_2046.Multipart {
 
         // Add file uploads
         for file in files {
-            var headers: [String: String] = [
-                "Content-Disposition": Self.escapeContentDisposition(
-                    name: file.fieldName,
-                    filename: file.filename
-                )
-            ]
-            if let contentType = file.contentType {
-                headers["Content-Type"] = contentType.headerValue
-            }
             // Note: Content-Transfer-Encoding not added per RFC 7578 §4.7
             // HTTP supports binary data natively
-
             parts.append(
                 RFC_2046.BodyPart(
-                    headers: headers,
+                    headers: .formDataFile(
+                        name: file.fieldName,
+                        filename: file.filename,
+                        contentType: file.contentType
+                    ),
                     content: file.content
                 )
             )
@@ -106,47 +99,15 @@ extension RFC_2046.Multipart {
 
     /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
     ///
-    /// Properly quotes field names and filenames, escaping special characters
-    /// (specifically double quotes) in multipart/form-data contexts.
-    ///
-    /// ## Usage
-    ///
-    /// ```swift
-    /// // Simple field name
-    /// let header1 = RFC_2046.Multipart.escapeContentDisposition(name: "username")
-    /// // Result: "form-data; name=\"username\""
-    ///
-    /// // Field with filename
-    /// let header2 = RFC_2046.Multipart.escapeContentDisposition(
-    ///     name: "avatar",
-    ///     filename: "photo.jpg"
-    /// )
-    /// // Result: "form-data; name=\"avatar\"; filename=\"photo.jpg\""
-    ///
-    /// // Escaping special characters
-    /// let header3 = RFC_2046.Multipart.escapeContentDisposition(
-    ///     name: "field\"with\"quotes"
-    /// )
-    /// // Result: "form-data; name=\"field\\\"with\\\"quotes\""
-    /// ```
-    ///
     /// - Parameters:
-    ///   - name: Form field name (will be escaped and quoted)
-    ///   - filename: Optional filename (will be escaped and quoted if provided)
+    ///   - name: Form field name
+    ///   - filename: Optional filename
     /// - Returns: Complete Content-Disposition header value for form-data
     ///
-    /// - Note: This method is public to allow downstream packages to properly
-    ///   construct Content-Disposition headers without duplicating the escaping logic.
+    /// - Deprecated: Use `RFC_2183.ContentDisposition.formData(name:filename:).headerValue` instead
+    @available(*, deprecated, message: "Use RFC_2183.ContentDisposition.formData(name:filename:).headerValue instead")
     public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
-        let escapedName = name.replacingOccurrences(of: "\"", with: "\\\"")
-        var result = "form-data; name=\"\(escapedName)\""
-
-        if let filename = filename {
-            let escapedFilename = filename.replacingOccurrences(of: "\"", with: "\\\"")
-            result += "; filename=\"\(escapedFilename)\""
-        }
-
-        return result
+        RFC_2183.ContentDisposition.formData(name: name, filename: filename).headerValue
     }
 }
 
@@ -155,15 +116,15 @@ extension RFC_2046.Multipart {
 extension RFC_7578.Form.Data {
     /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
     ///
-    /// Convenience accessor to `RFC_2046.Multipart.escapeContentDisposition`.
-    /// See that method for full documentation and examples.
-    ///
     /// - Parameters:
     ///   - name: Form field name
     ///   - filename: Optional filename
     /// - Returns: Escaped Content-Disposition header value
+    ///
+    /// - Deprecated: Use `RFC_2183.ContentDisposition.formData(name:filename:).headerValue` instead
+    @available(*, deprecated, message: "Use RFC_2183.ContentDisposition.formData(name:filename:).headerValue instead")
     public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
-        RFC_2046.Multipart.escapeContentDisposition(name: name, filename: filename)
+        RFC_2183.ContentDisposition.formData(name: name, filename: filename).headerValue
     }
 }
 
@@ -294,24 +255,16 @@ extension RFC_2046.Multipart {
         var fields: [String: String] = [:]
 
         for part in parts {
-            // Extract field name from Content-Disposition header
-            guard let disposition = part.headers["Content-Disposition"],
-                  disposition.contains("form-data"),
-                  let nameRange = disposition.range(of: "name=\""),
+            // Use typed Content-Disposition header
+            guard let disposition = part.typedHeaders.contentDisposition,
+                  disposition.type == .formData,
+                  let fieldName = disposition.name,
                   let textContent = part.textContent else {
                 continue
             }
 
-            // Extract field name
-            let afterName = disposition[nameRange.upperBound...]
-            guard let endQuote = afterName.firstIndex(of: "\"") else {
-                continue
-            }
-            let fieldName = String(afterName[..<endQuote])
-                .replacingOccurrences(of: "\\\"", with: "\"") // Unescape quotes
-
             // Skip file uploads (have filename parameter)
-            if disposition.contains("filename=") {
+            if disposition.filename != nil {
                 continue
             }
 
