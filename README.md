@@ -68,7 +68,6 @@ let body = formData.render()
 ### Creating Form Data with File Upload
 
 ```swift
-import Foundation
 import RFC_2045
 import RFC_2046
 import RFC_7578
