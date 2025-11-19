@@ -55,7 +55,7 @@ extension RFC_2046.Multipart {
     ///   - fields: Text form fields
     ///   - files: File upload parts (optional)
     ///   - boundary: Custom boundary (auto-generated if nil)
-    /// - Throws: `RFC_2046.MultipartError` if validation fails
+    /// - Throws: `RFC_2046.Multipart.Error` if validation fails
     public static func formData(
         fields: [String: String],
         files: [RFC_7578.Form.Data.File] = [],
