@@ -1,6 +1,6 @@
-import RFC_2045
-import RFC_2046
-import RFC_2183
+public import RFC_2045
+public import RFC_2046
+public import RFC_2183
 
 // MARK: - RFC 7578: Multipart/Form-Data
 
@@ -105,7 +105,7 @@ extension RFC_2046.Multipart {
     ///
     /// - Deprecated: Use `RFC_2183.ContentDisposition.formData(name:filename:).headerValue` instead
     @available(*, deprecated, message: "Use RFC_2183.ContentDisposition.formData(name:filename:).headerValue instead")
-    public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
+    public static func escapeContentDisposition(name: String, filename: RFC_2183.Filename? = nil) -> String {
         RFC_2183.ContentDisposition.formData(name: name, filename: filename).headerValue
     }
 }
@@ -122,7 +122,7 @@ extension RFC_7578.Form.Data {
     ///
     /// - Deprecated: Use `RFC_2183.ContentDisposition.formData(name:filename:).headerValue` instead
     @available(*, deprecated, message: "Use RFC_2183.ContentDisposition.formData(name:filename:).headerValue instead")
-    public static func escapeContentDisposition(name: String, filename: String? = nil) -> String {
+    public static func escapeContentDisposition(name: String, filename: RFC_2183.Filename? = nil) -> String {
         RFC_2183.ContentDisposition.formData(name: name, filename: filename).headerValue
     }
 }
@@ -143,20 +143,16 @@ extension RFC_7578.Form.Data {
     /// Errors that can occur when working with form-data
     public enum Error: Swift.Error, Hashable, Sendable {
         case emptyFieldName
-        case emptyFilename
     }
 }
 
-// MARK: - LocalizedError Conformance
+// MARK: - CustomStringConvertible Conformance
 
-extension RFC_7578.Form.Data.Error: LocalizedError {
-    public var errorDescription: String? {
+extension RFC_7578.Form.Data.Error: CustomStringConvertible {
+    public var description: String {
         switch self {
         case .emptyFieldName:
             return "Form field name must not be empty (RFC 7578)"
-        case .emptyFilename:
-            return
-                "Filename must not be empty for file uploads. Use the 'fields' parameter for text form fields."
         }
     }
 }
@@ -167,27 +163,30 @@ extension RFC_7578.Form.Data {
     /// RFC 7578: File uploads SHOULD include a filename parameter.
     /// For text form fields (no file), use the `fields` parameter in `.formData()` instead.
     ///
-    /// Binary files should use `.base64` transfer encoding (the default).
-    ///
     /// ## Example
     ///
     /// ```swift
-    /// let imageData = try Data(contentsOf: URL(fileURLWithPath: "photo.jpg"))
+    /// let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]  // JPEG header
     ///
-    /// let file = RFC_7578.Form.Data.File(
+    /// let file = try RFC_7578.Form.Data.File(
     ///     fieldName: "avatar",
-    ///     filename: "photo.jpg",
+    ///     filename: try RFC_2183.Filename("photo.jpg"),
     ///     contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
     ///     content: imageData
-    ///     // transferEncoding defaults to .base64
     /// )
     /// ```
     public struct File: Hashable, Sendable, Codable {
         /// The form field name (required per RFC 7578)
+        ///
+        /// This is the value of the "name" parameter in the Content-Disposition header.
+        /// RFC 7578 Section 4.2 requires this parameter for all form-data parts.
         public let fieldName: String
 
         /// The filename (required for file uploads per RFC 7578)
-        public let filename: String
+        ///
+        /// Uses RFC 2183's validated Filename type to prevent security issues
+        /// like path traversal and control character injection.
+        public let filename: RFC_2183.Filename
 
         /// The content type (optional but recommended for files)
         public let contentType: RFC_2045.ContentType?
@@ -196,32 +195,28 @@ extension RFC_7578.Form.Data {
         ///
         /// RFC 7578 Section 4.7: Content-Transfer-Encoding is deprecated for HTTP contexts.
         /// HTTP supports binary data natively, so no encoding is applied.
-        public let content: Data
+        public let content: [UInt8]
 
         /// Creates a form file upload
         ///
         /// - Parameters:
-        ///   - fieldName: Form field name (e.g., "avatar")
-        ///   - filename: Original filename (e.g., "photo.jpg")
+        ///   - fieldName: Form field name (e.g., "avatar"). Must not be empty.
+        ///   - filename: Validated filename from RFC 2183
         ///   - contentType: MIME type (recommended, e.g., `image/jpeg`)
         ///   - content: File content (binary data, no encoding applied per RFC 7578 §4.7)
         ///
         /// - Throws: `RFC_7578.Form.Data.Error.emptyFieldName` if fieldName is empty
-        /// - Throws: `RFC_7578.Form.Data.Error.emptyFilename` if filename is empty
         ///
         /// - Note: RFC 7578 Section 4.7 states that Content-Transfer-Encoding is deprecated
         ///   for HTTP contexts because HTTP supports binary data natively.
         public init(
             fieldName: String,
-            filename: String,
+            filename: RFC_2183.Filename,
             contentType: RFC_2045.ContentType? = nil,
-            content: Data
+            content: [UInt8]
         ) throws {
             guard !fieldName.isEmpty else {
                 throw RFC_7578.Form.Data.Error.emptyFieldName
-            }
-            guard !filename.isEmpty else {
-                throw RFC_7578.Form.Data.Error.emptyFilename
             }
 
             self.fieldName = fieldName

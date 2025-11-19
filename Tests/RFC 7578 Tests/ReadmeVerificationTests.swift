@@ -1,5 +1,6 @@
 import RFC_2045
 import RFC_2046
+import RFC_2183
 import Testing
 
 @testable import RFC_7578
@@ -24,11 +25,11 @@ struct `README Verification` {
     @Test
     func `Example from source: Creating Form Data with File Upload`() throws {
         // From Multipart+FormData.swift lines 43-51
-        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Mock JPEG header
+        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]  // Mock JPEG header
 
         let file = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
-            filename: "photo.jpg",
+            filename: try RFC_2183.Filename("photo.jpg"),
             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
             content: imageData
         )
@@ -44,12 +45,12 @@ struct `README Verification` {
 
     @Test
     func `Validation: Empty Field Name Throws Error`() throws {
-        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]
 
         #expect(throws: RFC_7578.Form.Data.Error.emptyFieldName) {
             try RFC_7578.Form.Data.File(
                 fieldName: "",
-                filename: "photo.jpg",
+                filename: try RFC_2183.Filename("photo.jpg"),
                 contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
                 content: imageData
             )
@@ -57,13 +58,14 @@ struct `README Verification` {
     }
 
     @Test
-    func `Validation: Empty Filename Throws Error`() throws {
-        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
+    func `Validation: Invalid Filename Throws Error`() throws {
+        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]
 
-        #expect(throws: RFC_7578.Form.Data.Error.emptyFilename) {
+        // RFC 2183 Filename validation should reject path traversal
+        #expect(throws: RFC_2183.Error.filenameContainsPathTraversal) {
             try RFC_7578.Form.Data.File(
                 fieldName: "avatar",
-                filename: "",
+                filename: try RFC_2183.Filename("../etc/passwd"),
                 contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
                 content: imageData
             )
@@ -85,19 +87,19 @@ struct `README Verification` {
 
     @Test
     func `Multiple Files Upload`() throws {
-        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
-        let textData = Data("test content".utf8)
+        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]
+        let textData: [UInt8] = Array("test content".utf8)
 
         let imageFile = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
-            filename: "photo.jpg",
+            filename: try RFC_2183.Filename("photo.jpg"),
             contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
             content: imageData
         )
 
         let textFile = try RFC_7578.Form.Data.File(
             fieldName: "document",
-            filename: "readme.txt",
+            filename: try RFC_2183.Filename("readme.txt"),
             contentType: RFC_2045.ContentType(type: "text", subtype: "plain"),
             content: textData
         )

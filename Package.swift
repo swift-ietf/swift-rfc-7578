@@ -31,16 +31,23 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: "RFC 7578 Tests",
+            name: "RFC 7578".tests,
             dependencies: ["RFC 7578"]
         )
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )
 
-for target in package.targets {
-    target.swiftSettings?.append(
-        contentsOf: [
-            .enableUpcomingFeature("MemberImportVisibility")
-        ]
-    )
+extension String {
+    var tests: Self { self + " Tests" }
+    var foundation: Self { self + " Foundation" }
+}
+
+for target in package.targets where ![.system, .binary, .plugin].contains(target.type) {
+    let existing = target.swiftSettings ?? []
+    target.swiftSettings = existing + [
+        .enableUpcomingFeature("ExistentialAny"),
+        .enableUpcomingFeature("InternalImportsByDefault"),
+        .enableUpcomingFeature("MemberImportVisibility")
+    ]
 }
