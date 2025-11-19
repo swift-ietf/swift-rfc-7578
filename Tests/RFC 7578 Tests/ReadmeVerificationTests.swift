@@ -4,11 +4,11 @@ import Testing
 
 @testable import RFC_7578
 
-@Suite("README Verification")
-struct ReadmeVerificationTests {
+@Suite
+struct `README Verification` {
 
-    @Test("Example from source: Creating Form Data with Fields")
-    func exampleCreatingFormDataWithFields() throws {
+    @Test
+    func `Example from source: Creating Form Data with Fields`() throws {
         // From Multipart+FormData.swift lines 19-23 and 39-42
         let formData = try RFC_2046.Multipart.formData(
             fields: [
@@ -21,8 +21,8 @@ struct ReadmeVerificationTests {
         #expect(formData.parts.count == 2)
     }
 
-    @Test("Example from source: Creating Form Data with File Upload")
-    func exampleCreatingFormDataWithFileUpload() throws {
+    @Test
+    func `Example from source: Creating Form Data with File Upload`() throws {
         // From Multipart+FormData.swift lines 43-51
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Mock JPEG header
 
@@ -42,8 +42,8 @@ struct ReadmeVerificationTests {
         #expect(formData.subtype == .formData)
     }
 
-    @Test("Validation: Empty Field Name Throws Error")
-    func validationEmptyFieldNameThrowsError() throws {
+    @Test
+    func `Validation: Empty Field Name Throws Error`() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
 
         #expect(throws: RFC_7578.Form.Data.Error.emptyFieldName) {
@@ -56,8 +56,8 @@ struct ReadmeVerificationTests {
         }
     }
 
-    @Test("Validation: Empty Filename Throws Error")
-    func validationEmptyFilenameThrowsError() throws {
+    @Test
+    func `Validation: Empty Filename Throws Error`() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
 
         #expect(throws: RFC_7578.Form.Data.Error.emptyFilename) {
@@ -70,8 +70,8 @@ struct ReadmeVerificationTests {
         }
     }
 
-    @Test("Content-Disposition Escaping: Special Characters in Names")
-    func contentDispositionEscaping() throws {
+    @Test
+    func `Content-Disposition Escaping: Special Characters in Names`() throws {
         // Test that field names with quotes are properly escaped
         let formData = try RFC_2046.Multipart.formData(
             fields: ["field\"name": "value"]
@@ -83,8 +83,8 @@ struct ReadmeVerificationTests {
         #expect(disposition.contains("field\\\"name"))
     }
 
-    @Test("Multiple Files Upload")
-    func multipleFilesUpload() throws {
+    @Test
+    func `Multiple Files Upload`() throws {
         let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
         let textData = Data("test content".utf8)
 
