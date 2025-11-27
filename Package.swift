@@ -17,6 +17,7 @@ let package = Package(
         )
     ],
     dependencies: [
+        .package(url: "https://github.com/swift-standards/swift-ieee-754", from: "0.1.0"),
         .package(url: "https://github.com/swift-standards/swift-rfc-2045", from: "0.1.0"),
         .package(url: "https://github.com/swift-standards/swift-rfc-2046", from: "0.1.0"),
         .package(url: "https://github.com/swift-standards/swift-rfc-2183", from: "0.1.0")
@@ -25,6 +26,7 @@ let package = Package(
         .target(
             name: "RFC 7578",
             dependencies: [
+                .product(name: "IEEE 754", package: "swift-ieee-754"),
                 .product(name: "RFC 2045", package: "swift-rfc-2045"),
                 .product(name: "RFC 2046", package: "swift-rfc-2046"),
                 .product(name: "RFC 2183", package: "swift-rfc-2183")
