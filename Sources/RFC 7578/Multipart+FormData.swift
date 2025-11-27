@@ -90,7 +90,9 @@ extension RFC_2046.Multipart {
         }
 
         // Generate boundary if not provided
-        let effectiveBoundary = boundary ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
+        let effectiveBoundary =
+            boundary
+            ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
 
         return try Self(
             subtype: .formData,
@@ -107,8 +109,15 @@ extension RFC_2046.Multipart {
     /// - Returns: Complete Content-Disposition header value for form-data
     ///
     /// - Deprecated: Use `String(RFC_2183.ContentDisposition.formData(name:filename:))` instead
-    @available(*, deprecated, message: "Use String(RFC_2183.ContentDisposition.formData(name:filename:)) instead")
-    public static func escapeContentDisposition(name: String, filename: RFC_2183.Filename? = nil) -> String {
+    @available(
+        *,
+        deprecated,
+        message: "Use String(RFC_2183.ContentDisposition.formData(name:filename:)) instead"
+    )
+    public static func escapeContentDisposition(
+        name: String,
+        filename: RFC_2183.Filename? = nil
+    ) -> String {
         String(RFC_2183.ContentDisposition.formData(name: name, filename: filename))
     }
 }
@@ -124,8 +133,15 @@ extension RFC_7578.Form.Data {
     /// - Returns: Escaped Content-Disposition header value
     ///
     /// - Deprecated: Use `String(RFC_2183.ContentDisposition.formData(name:filename:))` instead
-    @available(*, deprecated, message: "Use String(RFC_2183.ContentDisposition.formData(name:filename:)) instead")
-    public static func escapeContentDisposition(name: String, filename: RFC_2183.Filename? = nil) -> String {
+    @available(
+        *,
+        deprecated,
+        message: "Use String(RFC_2183.ContentDisposition.formData(name:filename:)) instead"
+    )
+    public static func escapeContentDisposition(
+        name: String,
+        filename: RFC_2183.Filename? = nil
+    ) -> String {
         String(RFC_2183.ContentDisposition.formData(name: name, filename: filename))
     }
 }
@@ -254,9 +270,10 @@ extension RFC_2046.Multipart {
         for part in parts {
             // Use typed Content-Disposition header
             guard let disposition = part.headers.contentDisposition,
-                  disposition.type == RFC_2183.DispositionType.formData,
-                  let fieldName = disposition.name,
-                  let textContent = part.textContent else {
+                disposition.type == RFC_2183.DispositionType.formData,
+                let fieldName = disposition.name,
+                let textContent = part.textContent
+            else {
                 continue
             }
 

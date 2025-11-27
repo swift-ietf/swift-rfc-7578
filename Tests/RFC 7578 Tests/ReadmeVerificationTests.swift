@@ -14,7 +14,7 @@ struct `README Verification` {
         let formData = try RFC_2046.Multipart.formData(
             fields: [
                 "username": "john_doe",
-                "email": "john@example.com"
+                "email": "john@example.com",
             ]
         )
 
