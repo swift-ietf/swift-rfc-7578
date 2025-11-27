@@ -3,26 +3,7 @@ public import RFC_2046
 public import RFC_2183
 
 // MARK: - RFC 7578: Multipart/Form-Data
-
-extension RFC_2046.Multipart.Subtype {
-    /// Form data with file uploads
-    ///
-    /// Used in HTTP POST requests with file uploads.
-    /// Each part has a `Content-Disposition: form-data` header
-    /// with the form field name.
-    ///
-    /// **RFC 7578** - Returning Values from Forms: multipart/form-data
-    ///
-    /// ## Example
-    ///
-    /// ```swift
-    /// let formData = try RFC_2046.Multipart.formData(
-    ///     fields: ["username": "john_doe"],
-    ///     files: [...]
-    /// )
-    /// ```
-    public static let formData = RFC_2046.Multipart.Subtype(rawValue: "form-data")
-}
+// Note: .formData subtype is defined in RFC_2046.Multipart.Subtype
 
 extension RFC_2046.Multipart {
     /// Creates a multipart/form-data message
@@ -65,10 +46,13 @@ extension RFC_2046.Multipart {
 
         // Add text fields
         for (name, value) in fields.sorted(by: { $0.key < $1.key }) {
+            var headers = RFC_2046.BodyPart.Headers()
+            headers.contentDisposition = RFC_2183.ContentDisposition.formData(name: name)
+            headers.contentType = .textPlainUTF8
             parts.append(
                 RFC_2046.BodyPart(
-                    headers: .formDataTextField(name: name),
-                    text: value
+                    headers: headers,
+                    content: RFC_2046.BodyPart.Content(Array(value.utf8))
                 )
             )
         }
@@ -77,22 +61,25 @@ extension RFC_2046.Multipart {
         for file in files {
             // Note: Content-Transfer-Encoding not added per RFC 7578 §4.7
             // HTTP supports binary data natively
+            var headers = RFC_2046.BodyPart.Headers()
+            headers.contentDisposition = RFC_2183.ContentDisposition.formData(
+                name: file.fieldName,
+                filename: file.filename
+            )
+            headers.contentType = file.contentType
             parts.append(
                 RFC_2046.BodyPart(
-                    headers: .formDataFile(
-                        name: file.fieldName,
-                        filename: file.filename,
-                        contentType: file.contentType
-                    ),
-                    content: file.content
+                    headers: headers,
+                    content: RFC_2046.BodyPart.Content(file.content)
                 )
             )
         }
 
         // Generate boundary if not provided
-        let effectiveBoundary =
+        let effectiveBoundaryString =
             boundary
             ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
+        let effectiveBoundary = try RFC_2046.Boundary(effectiveBoundaryString)
 
         return try Self(
             subtype: .formData,
@@ -271,8 +258,7 @@ extension RFC_2046.Multipart {
             // Use typed Content-Disposition header
             guard let disposition = part.headers.contentDisposition,
                 disposition.type == RFC_2183.DispositionType.formData,
-                let fieldName = disposition.name,
-                let textContent = part.textContent
+                let fieldName = disposition.name
             else {
                 continue
             }
@@ -282,6 +268,8 @@ extension RFC_2046.Multipart {
                 continue
             }
 
+            // Get text content from raw bytes
+            let textContent = String(part.content)
             fields[fieldName] = textContent
         }
 

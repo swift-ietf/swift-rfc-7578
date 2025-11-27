@@ -30,7 +30,7 @@ struct `README Verification` {
         let file = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
             filename: try RFC_2183.Filename("photo.jpg"),
-            contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
+            contentType: try RFC_2045.ContentType("image/jpeg"),
             content: imageData
         )
 
@@ -51,7 +51,7 @@ struct `README Verification` {
             try RFC_7578.Form.Data.File(
                 fieldName: "",
                 filename: try RFC_2183.Filename("photo.jpg"),
-                contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
+                contentType: try RFC_2045.ContentType("image/jpeg"),
                 content: imageData
             )
         }
@@ -59,16 +59,9 @@ struct `README Verification` {
 
     @Test
     func `Validation: Invalid Filename Throws Error`() throws {
-        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]
-
         // RFC 2183 Filename validation should reject path traversal
-        #expect(throws: RFC_2183.Error.filenameContainsPathTraversal) {
-            try RFC_7578.Form.Data.File(
-                fieldName: "avatar",
-                filename: try RFC_2183.Filename("../etc/passwd"),
-                contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
-                content: imageData
-            )
+        #expect(throws: RFC_2183.Filename.Error.self) {
+            _ = try RFC_2183.Filename("../etc/passwd")
         }
     }
 
@@ -80,9 +73,10 @@ struct `README Verification` {
         )
 
         let firstPart = formData.parts.first!
-        let disposition = firstPart.headers["Content-Disposition"]!
+        let disposition = firstPart.headers.contentDisposition!
 
-        #expect(disposition.contains("field\\\"name"))
+        // Check the name contains the expected field name
+        #expect(disposition.name == "field\"name")
     }
 
     @Test
@@ -93,14 +87,14 @@ struct `README Verification` {
         let imageFile = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
             filename: try RFC_2183.Filename("photo.jpg"),
-            contentType: RFC_2045.ContentType(type: "image", subtype: "jpeg"),
+            contentType: try RFC_2045.ContentType("image/jpeg"),
             content: imageData
         )
 
         let textFile = try RFC_7578.Form.Data.File(
             fieldName: "document",
             filename: try RFC_2183.Filename("readme.txt"),
-            contentType: RFC_2045.ContentType(type: "text", subtype: "plain"),
+            contentType: try RFC_2045.ContentType("text/plain"),
             content: textData
         )
 

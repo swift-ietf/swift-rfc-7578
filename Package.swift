@@ -21,7 +21,6 @@ let package = Package(
         .package(url: "https://github.com/swift-standards/swift-rfc-2045", from: "0.1.0"),
         .package(url: "https://github.com/swift-standards/swift-rfc-2046", from: "0.1.0"),
         .package(url: "https://github.com/swift-standards/swift-rfc-2183", from: "0.3.0"),
-        .package(url: "https://github.com/swift-standards/swift-rfc-5322", from: "0.4.0"),
     ],
     targets: [
         .target(
