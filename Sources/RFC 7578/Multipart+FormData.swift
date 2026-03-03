@@ -41,7 +41,7 @@ extension RFC_2046.Multipart {
         fields: [String: String],
         files: [RFC_7578.Form.Data.File] = [],
         boundary: String? = nil
-    ) throws -> Self {
+    ) throws(Error) -> Self {
         var parts: [RFC_2046.BodyPart] = []
 
         // Add text fields
@@ -79,7 +79,12 @@ extension RFC_2046.Multipart {
         let effectiveBoundaryString =
             boundary
             ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
-        let effectiveBoundary = try RFC_2046.Boundary(effectiveBoundaryString)
+        let effectiveBoundary: RFC_2046.Boundary
+        do {
+            effectiveBoundary = try RFC_2046.Boundary(effectiveBoundaryString)
+        } catch {
+            throw .invalidFormat("\(error)")
+        }
 
         return try Self(
             subtype: .formData,
@@ -220,7 +225,7 @@ extension RFC_7578.Form.Data {
             filename: RFC_2183.Filename,
             contentType: RFC_2045.ContentType? = nil,
             content: [UInt8]
-        ) throws {
+        ) throws(RFC_7578.Form.Data.Error) {
             guard !fieldName.isEmpty else {
                 throw RFC_7578.Form.Data.Error.emptyFieldName
             }
