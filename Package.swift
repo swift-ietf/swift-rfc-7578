@@ -17,7 +17,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../../../swift-ieee/swift-ieee-754"),
+        .package(path: "../../swift-ieee/swift-ieee-754"),
         .package(path: "../swift-rfc-2045"),
         .package(path: "../swift-rfc-2046"),
         .package(path: "../swift-rfc-2183")
