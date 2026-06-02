@@ -17,10 +17,10 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(path: "../../swift-ieee/swift-ieee-754"),
-        .package(path: "../swift-rfc-2045"),
-        .package(path: "../swift-rfc-2046"),
-        .package(path: "../swift-rfc-2183")
+        .package(url: "https://github.com/swift-ieee/swift-ieee-754.git", branch: "main"),
+        .package(url: "https://github.com/swift-ietf/swift-rfc-2045.git", branch: "main"),
+        .package(url: "https://github.com/swift-ietf/swift-rfc-2046.git", branch: "main"),
+        .package(url: "https://github.com/swift-ietf/swift-rfc-2183.git", branch: "main")
     ],
     targets: [
         .target(
