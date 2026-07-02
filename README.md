@@ -1,6 +1,6 @@
 # Swift RFC 7578
 
-[![CI](https://github.com/swift-standards/swift-rfc-7578/workflows/CI/badge.svg)](https://github.com/swift-standards/swift-rfc-7578/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-ietf/swift-rfc-7578/workflows/CI/badge.svg)](https://github.com/swift-ietf/swift-rfc-7578/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 Swift implementation of RFC 7578: Returning Values from Forms - multipart/form-data
@@ -26,7 +26,7 @@ Add swift-rfc-7578 to your package dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-standards/swift-rfc-7578.git", from: "0.1.0")
+    .package(url: "https://github.com/swift-ietf/swift-rfc-7578.git", from: "0.3.3")
 ]
 ```
 
@@ -215,11 +215,11 @@ This implementation follows RFC 7578 specifications:
 ## Related Packages
 
 ### Dependencies
-- [swift-rfc-2045](https://github.com/swift-standards/swift-rfc-2045) - MIME fundamentals (Content-Type, Content-Transfer-Encoding)
-- [swift-rfc-2046](https://github.com/swift-standards/swift-rfc-2046) - MIME multipart media types
+- [swift-rfc-2045](https://github.com/swift-ietf/swift-rfc-2045) - MIME fundamentals (Content-Type, Content-Transfer-Encoding)
+- [swift-rfc-2046](https://github.com/swift-ietf/swift-rfc-2046) - MIME multipart media types
 
 ### Related
-- [swift-rfc-2388](https://github.com/swift-standards/swift-rfc-2388) - Returning Values from Forms: multipart/form-data encoding
+- [swift-rfc-2388](https://github.com/swift-ietf/swift-rfc-2388) - Returning Values from Forms: multipart/form-data encoding
 
 ## License
 
