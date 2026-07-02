@@ -1,6 +1,6 @@
 # .github/metadata.yaml
 # Triaged by AI-assisted bulk pass (2026-04-29).
-description: "Swift implementation of RFC 7578: Returning Values from Forms - multipart/form-data."
+description: "Swift implementation of RFC 7578: Returning Values from Forms: multipart/form-data."
 topics:
   - standards
   - rfc
