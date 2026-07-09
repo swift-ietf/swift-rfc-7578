@@ -52,7 +52,7 @@ extension RFC_2046.Multipart {
             parts.append(
                 RFC_2046.BodyPart(
                     headers: headers,
-                    content: RFC_2046.BodyPart.Content(Array(value.utf8))
+                    content: RFC_2046.BodyPart.Content(Array(value.utf8).map { Byte($0) })
                 )
             )
         }
@@ -70,7 +70,7 @@ extension RFC_2046.Multipart {
             parts.append(
                 RFC_2046.BodyPart(
                     headers: headers,
-                    content: RFC_2046.BodyPart.Content(file.content)
+                    content: RFC_2046.BodyPart.Content(file.content.map { Byte($0) })
                 )
             )
         }
@@ -80,7 +80,7 @@ extension RFC_2046.Multipart {
             boundary
             ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
         let effectiveBoundary: RFC_2046.Boundary
-        do {
+        do throws(RFC_2046.Boundary.Error) {
             effectiveBoundary = try RFC_2046.Boundary(effectiveBoundaryString)
         } catch {
             throw .invalidFormat("\(error)")
