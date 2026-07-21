@@ -93,6 +93,31 @@ extension RFC_2046.Multipart {
         )
     }
 
+    /// Decodes this multipart body as multipart/form-data
+    ///
+    /// The decode counterpart of `formData(fields:files:boundary:)`: projects
+    /// the parsed parts into named text fields and files per RFC 7578 §4.2,
+    /// applying the §5.1 charset rules to text parts.
+    ///
+    /// **RFC 7578** - Returning Values from Forms: multipart/form-data
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let decoded = try multipart.formData()
+    /// let username = decoded["username"]           // String?
+    /// let avatar = decoded.file(named: "avatar")   // RFC_7578.Form.Data.File?
+    /// ```
+    ///
+    /// - Returns: The decoded field/file projection
+    /// - Throws: `RFC_7578.Form.Data.Decoded.Error` if a part violates
+    ///   RFC 7578 §4.2 or its text content cannot be decoded per §5.1
+    public func formData() throws(RFC_7578.Form.Data.Decoded.Error)
+        -> RFC_7578.Form.Data.Decoded
+    {
+        try RFC_7578.Form.Data.Decoded(self)
+    }
+
     /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
     ///
     /// - Parameters:
