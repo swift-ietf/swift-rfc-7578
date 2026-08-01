@@ -7,7 +7,12 @@ import Testing
 
 @Suite
 struct `README Verification` {
+    @Suite struct Unit {}
+    @Suite struct `Edge Case` {}
+    @Suite struct Integration {}
+}
 
+extension `README Verification`.Unit {
     @Test
     func `Example from source: Creating Form Data with Fields`() throws {
         // From Multipart+FormData.swift lines 19-23 and 39-42

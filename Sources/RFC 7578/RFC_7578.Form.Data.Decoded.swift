@@ -88,6 +88,10 @@ extension RFC_7578.Form.Data.Decoded {
                         fieldName: name,
                         filename: filename,
                         contentType: part.headers.contentType,
+                        // swift-linter:disable:next raw value access
+                        // REASON: no typed byte accessor exposed by `RFC_2046.BodyPart.Content`; `.rawValue` is its only projection.
+                        // swift-linter:disable:next chained rawvalue access
+                        // REASON: no typed byte accessor exposed by `RFC_2046.BodyPart.Content`; `.rawValue` is its only projection.
                         content: part.content.rawValue.map(\.underlying)
                     )
                 } catch {
@@ -163,6 +167,8 @@ extension RFC_7578.Form.Data.Decoded {
             throw .missingContentDisposition
         }
         guard disposition.type == RFC_2183.DispositionType.formData else {
+            // swift-linter:disable:next raw value access
+            // REASON: no typed accessor exposed by `RFC_2183.DispositionType`; `.rawValue` is its only projection, needed here for the error payload.
             throw .invalidDispositionType(disposition.type.rawValue)
         }
         guard let name = disposition.name, !name.isEmpty else {
@@ -195,6 +201,8 @@ extension RFC_7578.Form.Data.Decoded {
             else {
                 continue
             }
+            // swift-linter:disable:next raw value access
+            // REASON: no typed byte accessor exposed by `RFC_2046.BodyPart.Content`; `.rawValue` is its only projection.
             guard let label = text(part.content.rawValue, charset: .utf8) else {
                 throw .invalidTextContent(fieldName: charsetFieldName)
             }
@@ -205,6 +213,10 @@ extension RFC_7578.Form.Data.Decoded {
 
     /// Whether this implementation can decode text in the given charset
     private static func isSupported(_ charset: RFC_2045.Charset) -> Bool {
+        // swift-linter:disable:next raw value access
+        // REASON: no typed accessor exposed by `RFC_2045.Charset`; `.rawValue` is its only projection.
+        // swift-linter:disable:next chained rawvalue access
+        // REASON: no typed accessor exposed by `RFC_2045.Charset`; `.rawValue` is its only projection.
         switch charset.rawValue.uppercased() {
         case "UTF-8", "US-ASCII", "ASCII", "ISO-8859-1", "LATIN1",
             "UTF-16", "UTF-16BE", "UTF-16LE":
@@ -227,6 +239,10 @@ extension RFC_7578.Form.Data.Decoded {
         charset: RFC_2045.Charset
     ) -> String? {
         let octets = bytes.map(\.underlying)
+        // swift-linter:disable:next raw value access
+        // REASON: no typed accessor exposed by `RFC_2045.Charset`; `.rawValue` is its only projection.
+        // swift-linter:disable:next chained rawvalue access
+        // REASON: no typed accessor exposed by `RFC_2045.Charset`; `.rawValue` is its only projection.
         switch charset.rawValue.uppercased() {
         case "UTF-8":
             return String(validating: octets, as: UTF8.self)

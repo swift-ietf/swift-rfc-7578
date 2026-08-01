@@ -41,4 +41,7 @@ struct `RFC_7578 Form Data Field Tests` {
             #expect(field.value.isEmpty)
         }
     }
+
+    @Suite
+    struct Integration {}
 }
