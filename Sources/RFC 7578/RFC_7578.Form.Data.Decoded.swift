@@ -221,6 +221,7 @@ extension RFC_7578.Form.Data.Decoded {
         case "UTF-8", "US-ASCII", "ASCII", "ISO-8859-1", "LATIN1",
             "UTF-16", "UTF-16BE", "UTF-16LE":
             return true
+
         default:
             return false
         }
@@ -246,9 +247,11 @@ extension RFC_7578.Form.Data.Decoded {
         switch charset.rawValue.uppercased() {
         case "UTF-8":
             return String(validating: octets, as: UTF8.self)
+
         case "US-ASCII", "ASCII":
             guard octets.allSatisfy({ $0 < 0x80 }) else { return nil }
             return String(validating: octets, as: UTF8.self)
+
         case "ISO-8859-1", "LATIN1":
             // ISO-8859-1 maps byte values directly to U+0000...U+00FF.
             return String(
@@ -256,6 +259,7 @@ extension RFC_7578.Form.Data.Decoded {
                     octets.lazy.compactMap { Unicode.Scalar(UInt32($0)) }
                 )
             )
+
         case "UTF-16":
             // RFC 2781 §4.3: honor a BOM when present, else big-endian.
             if octets.count >= 2, octets[0] == 0xFF, octets[1] == 0xFE {
@@ -265,10 +269,13 @@ extension RFC_7578.Form.Data.Decoded {
                 return utf16Text(octets.dropFirst(2), bigEndian: true)
             }
             return utf16Text(octets[...], bigEndian: true)
+
         case "UTF-16BE":
             return utf16Text(octets[...], bigEndian: true)
+
         case "UTF-16LE":
             return utf16Text(octets[...], bigEndian: false)
+
         default:
             return nil
         }
