@@ -8,7 +8,7 @@ let package = Package(
         .macOS(.v26),
         .iOS(.v26),
         .tvOS(.v26),
-        .watchOS(.v26)
+        .watchOS(.v26),
     ],
     products: [
         .library(
@@ -20,7 +20,7 @@ let package = Package(
         .package(url: "https://github.com/swift-ieee/swift-ieee-754.git", branch: "main"),
         .package(url: "https://github.com/swift-ietf/swift-rfc-2045.git", branch: "main"),
         .package(url: "https://github.com/swift-ietf/swift-rfc-2046.git", branch: "main"),
-        .package(url: "https://github.com/swift-ietf/swift-rfc-2183.git", branch: "main")
+        .package(url: "https://github.com/swift-ietf/swift-rfc-2183.git", branch: "main"),
     ],
     targets: [
         .target(
@@ -29,13 +29,13 @@ let package = Package(
                 .product(name: "IEEE 754", package: "swift-ieee-754"),
                 .product(name: "RFC 2045", package: "swift-rfc-2045"),
                 .product(name: "RFC 2046", package: "swift-rfc-2046"),
-                .product(name: "RFC 2183", package: "swift-rfc-2183")
-    ]
+                .product(name: "RFC 2183", package: "swift-rfc-2183"),
+            ]
         ),
         .testTarget(
             name: "RFC 7578 Tests",
             dependencies: [
-                "RFC 7578",
+                "RFC 7578"
             ]
         ),
     ],

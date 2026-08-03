@@ -340,7 +340,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(name: "empty", content: [])
             ])
-            #expect(decoded["empty"] == "")
+            #expect(decoded["empty"]?.isEmpty == true)
         }
 
         @Test
