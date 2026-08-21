@@ -4,17 +4,8 @@ extension RFC_7578.Form {
     public enum Data {}
 }
 
-// MARK: - Convenience Accessor
-
 extension RFC_7578.Form.Data {
-    /// Escapes Content-Disposition field value per RFC 2183/RFC 2231
-    ///
-    /// - Parameters:
-    ///   - name: Form field name
-    ///   - filename: Optional filename
-    /// - Returns: Escaped Content-Disposition header value
-    ///
-    /// - Deprecated: Use `String(RFC_2183.ContentDisposition.formData(name:filename:))` instead
+
     @available(
         *,
         deprecated,

@@ -8,8 +8,6 @@ import Testing
 @Suite
 struct `RFC_7578 Form Data Decoded Tests` {
 
-    // MARK: - Helpers
-
     static func fieldPart(
         name: String,
         content: [UInt8],
@@ -49,8 +47,6 @@ struct `RFC_7578 Form Data Decoded Tests` {
             content: RFC_2046.BodyPart.Content(content.map { Byte($0) })
         )
     }
-
-    // MARK: - Unit
 
     @Suite
     struct Unit {
@@ -116,7 +112,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(
                     name: "city",
-                    content: [0x4C, 0x69, 0xE8, 0x67, 0x65],  // "Liège" in Latin-1
+                    content: [0x4C, 0x69, 0xE8, 0x67, 0x65],
                     contentType: try RFC_2045.ContentType("text/plain; charset=ISO-8859-1")
                 )
             ])
@@ -129,7 +125,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(
                     name: "greeting",
-                    content: [0x00, 0x48, 0x00, 0x69],  // "Hi" UTF-16BE
+                    content: [0x00, 0x48, 0x00, 0x69],
                     contentType: try RFC_2045.ContentType("text/plain; charset=UTF-16BE")
                 )
             ])
@@ -141,7 +137,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
         func `Applies the _charset_ field as default charset per section 5-1-1`() throws {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(name: "_charset_", value: "ISO-8859-1"),
-                fieldPart(name: "city", content: [0xE9]),  // "é" in Latin-1
+                fieldPart(name: "city", content: [0xE9]),
             ])
 
             #expect(decoded["city"] == "é")
@@ -181,8 +177,6 @@ struct `RFC_7578 Form Data Decoded Tests` {
             #expect(decoded["username"] == "john_doe")
         }
     }
-
-    // MARK: - Edge Case
 
     @Suite
     struct `Edge Case` {
@@ -232,7 +226,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
 
         @Test
         func `Invalid UTF-8 content throws invalidTextContent`() throws {
-            let part = fieldPart(name: "broken", content: [0xC3, 0x28])  // invalid UTF-8
+            let part = fieldPart(name: "broken", content: [0xC3, 0x28])
 
             #expect(
                 throws: RFC_7578.Form.Data.Decoded.Error.invalidTextContent(
@@ -292,7 +286,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(
                     name: "bom",
-                    content: [0xFF, 0xFE, 0x48, 0x00, 0x69, 0x00],  // BOM + "Hi" LE
+                    content: [0xFF, 0xFE, 0x48, 0x00, 0x69, 0x00],
                     contentType: try RFC_2045.ContentType("text/plain; charset=UTF-16")
                 )
             ])
@@ -305,7 +299,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             let decoded = try RFC_7578.Form.Data.Decoded([
                 fieldPart(
                     name: "nobom",
-                    content: [0x00, 0x48, 0x00, 0x69],  // "Hi" BE
+                    content: [0x00, 0x48, 0x00, 0x69],
                     contentType: try RFC_2045.ContentType("text/plain; charset=UTF-16")
                 )
             ])
@@ -355,8 +349,6 @@ struct `RFC_7578 Form Data Decoded Tests` {
         }
     }
 
-    // MARK: - Integration
-
     @Suite
     struct Integration {
         @Test
@@ -386,9 +378,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
 
         @Test
         func `Decoded projection replaces JSON-round-trip extraction (B2-09)`() throws {
-            // The retired downstream path projected fields via a
-            // JSONSerialization/JSONDecoder round-trip; the typed projection
-            // must yield the same field mapping directly from parts.
+
             let multipart = try RFC_2046.Multipart.formData(
                 fields: ["a": "1", "b": "two", "c": "✓"]
             )

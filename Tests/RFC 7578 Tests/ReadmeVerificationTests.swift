@@ -15,7 +15,7 @@ struct `README Verification` {
 extension `README Verification`.Unit {
     @Test
     func `Example from source: Creating Form Data with Fields`() throws {
-        // From Multipart+FormData.swift lines 19-23 and 39-42
+
         let formData = try RFC_2046.Multipart.formData(
             fields: [
                 "username": "john_doe",
@@ -29,8 +29,8 @@ extension `README Verification`.Unit {
 
     @Test
     func `Example from source: Creating Form Data with File Upload`() throws {
-        // From Multipart+FormData.swift lines 43-51
-        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]  // Mock JPEG header
+
+        let imageData: [UInt8] = [0xFF, 0xD8, 0xFF, 0xE0]
 
         let file = try RFC_7578.Form.Data.File(
             fieldName: "avatar",
@@ -44,7 +44,7 @@ extension `README Verification`.Unit {
             files: [file]
         )
 
-        #expect(formData.parts.count == 2)  // 1 field + 1 file
+        #expect(formData.parts.count == 2)
         #expect(formData.subtype == .formData)
     }
 
@@ -64,7 +64,7 @@ extension `README Verification`.Unit {
 
     @Test
     func `Validation: Invalid Filename Throws Error`() throws {
-        // RFC 2183 Filename validation should reject path traversal
+
         #expect(throws: RFC_2183.Filename.Error.self) {
             _ = try RFC_2183.Filename("../etc/passwd")
         }
@@ -72,7 +72,7 @@ extension `README Verification`.Unit {
 
     @Test
     func `Content-Disposition Escaping: Special Characters in Names`() throws {
-        // Test that field names with quotes are properly escaped
+
         let formData = try RFC_2046.Multipart.formData(
             fields: ["field\"name": "value"]
         )
@@ -80,7 +80,6 @@ extension `README Verification`.Unit {
         let firstPart = formData.parts.first!
         let disposition = firstPart.headers.contentDisposition!
 
-        // Check the name contains the expected field name
         #expect(disposition.name == "field\"name")
     }
 
@@ -108,6 +107,6 @@ extension `README Verification`.Unit {
             files: [imageFile, textFile]
         )
 
-        #expect(formData.parts.count == 3)  // 1 field + 2 files
+        #expect(formData.parts.count == 3)
     }
 }
