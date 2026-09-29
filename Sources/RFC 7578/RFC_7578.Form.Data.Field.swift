@@ -1,6 +1,6 @@
 extension RFC_7578.Form.Data {
 
-    public struct Field: Hashable, Sendable, Codable {
+    public struct Field: Hashable, Sendable {
 
         public let name: String
 

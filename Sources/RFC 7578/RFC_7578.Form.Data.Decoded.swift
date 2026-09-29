@@ -1,10 +1,11 @@
-internal import RFC_2045
+import Byte
+import RFC_2045
 public import RFC_2046
-internal import RFC_2183
+import RFC_2183
 
 extension RFC_7578.Form.Data {
 
-    public struct Decoded: Hashable, Sendable, Codable {
+    public struct Decoded: Hashable, Sendable {
 
         public let fields: [Field]
 
@@ -41,8 +42,7 @@ extension RFC_7578.Form.Data.Decoded {
                         fieldName: name,
                         filename: filename,
                         contentType: part.headers.contentType,
-
-                        content: part.content.rawValue.map(\.underlying)
+                        content: part.content.rawValue.map(\.bitPattern)
                     )
                 } catch {
 
@@ -136,7 +136,11 @@ extension RFC_7578.Form.Data.Decoded {
             guard let label = text(part.content.rawValue, charset: .utf8) else {
                 throw .invalidTextContent(fieldName: charsetFieldName)
             }
-            return RFC_2045.Charset(label)
+            do throws(RFC_2045.Charset.Error) {
+                return try RFC_2045.Charset(label)
+            } catch {
+                throw .unsupportedCharset(label)
+            }
         }
         return nil
     }
@@ -157,7 +161,7 @@ extension RFC_7578.Form.Data.Decoded {
         _ bytes: [Byte],
         charset: RFC_2045.Charset
     ) -> String? {
-        let octets = bytes.map(\.underlying)
+        let octets = bytes.map(\.bitPattern)
 
         switch charset.rawValue.uppercased() {
         case "UTF-8":

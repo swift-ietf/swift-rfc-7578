@@ -1,6 +1,7 @@
+import Byte
 import RFC_2045
 public import RFC_2046
-public import RFC_2183
+import RFC_2183
 
 extension RFC_2046.Multipart {
 
@@ -18,7 +19,7 @@ extension RFC_2046.Multipart {
             parts.append(
                 RFC_2046.BodyPart(
                     headers: headers,
-                    content: RFC_2046.BodyPart.Content(Array(value.utf8).map { Byte($0) })
+                    content: RFC_2046.BodyPart.Content(value.utf8.map(Byte.init(bitPattern:)))
                 )
             )
         }
@@ -34,7 +35,7 @@ extension RFC_2046.Multipart {
             parts.append(
                 RFC_2046.BodyPart(
                     headers: headers,
-                    content: RFC_2046.BodyPart.Content(file.content.map { Byte($0) })
+                    content: RFC_2046.BodyPart.Content(file.content.map(Byte.init(bitPattern:)))
                 )
             )
         }
@@ -61,18 +62,6 @@ extension RFC_2046.Multipart {
     {
         try RFC_7578.Form.Data.Decoded(self)
     }
-
-    @available(
-        *,
-        deprecated,
-        message: "Use String(RFC_2183.ContentDisposition.formData(name:filename:)) instead"
-    )
-    public static func escapeContentDisposition(
-        name: String,
-        filename: RFC_2183.Filename? = nil
-    ) -> String {
-        String(RFC_2183.ContentDisposition.formData(name: name, filename: filename))
-    }
 }
 
 extension RFC_2046.Multipart {
@@ -93,8 +82,7 @@ extension RFC_2046.Multipart {
                 continue
             }
 
-            let textContent = String(part.content)
-            fields[fieldName] = textContent
+            fields[fieldName] = part.content.description
         }
 
         return fields

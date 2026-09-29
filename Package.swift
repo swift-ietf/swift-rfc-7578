@@ -14,10 +14,14 @@ let package = Package(
         .library(
             name: "RFC 7578",
             targets: ["RFC 7578"]
-        )
+        ),
+        .library(
+            name: "RFC 7578 Foundation Integration",
+            targets: ["RFC 7578 Foundation Integration"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-ieee/swift-ieee-754.git", branch: "main"),
+        .package(url: "https://github.com/swift-atoms/swift-byte.git", branch: "main"),
         .package(url: "https://github.com/swift-ietf/swift-rfc-2045.git", branch: "main"),
         .package(url: "https://github.com/swift-ietf/swift-rfc-2046.git", branch: "main"),
         .package(url: "https://github.com/swift-ietf/swift-rfc-2183.git", branch: "main"),
@@ -26,16 +30,45 @@ let package = Package(
         .target(
             name: "RFC 7578",
             dependencies: [
-                .product(name: "IEEE 754", package: "swift-ieee-754"),
+                .product(name: "Byte", package: "swift-byte"),
+                .product(name: "RFC 2045", package: "swift-rfc-2045"),
+                .product(name: "RFC 2046", package: "swift-rfc-2046"),
+                .product(name: "RFC 2183", package: "swift-rfc-2183"),
+            ]
+        ),
+        .target(
+            name: "RFC 7578 Foundation Integration",
+            dependencies: [
+                .target(name: "RFC 7578"),
+                .product(name: "RFC 2045", package: "swift-rfc-2045"),
+                .product(
+                    name: "RFC 2045 Foundation Integration",
+                    package: "swift-rfc-2045"
+                ),
+                .product(name: "RFC 2183", package: "swift-rfc-2183"),
+                .product(
+                    name: "RFC 2183 Foundation Integration",
+                    package: "swift-rfc-2183"
+                ),
+            ]
+        ),
+        .testTarget(
+            name: "RFC 7578 Tests",
+            dependencies: [
+                .target(name: "RFC 7578"),
+                .product(name: "Byte", package: "swift-byte"),
                 .product(name: "RFC 2045", package: "swift-rfc-2045"),
                 .product(name: "RFC 2046", package: "swift-rfc-2046"),
                 .product(name: "RFC 2183", package: "swift-rfc-2183"),
             ]
         ),
         .testTarget(
-            name: "RFC 7578 Tests",
+            name: "RFC 7578 Foundation Integration Tests",
             dependencies: [
-                .target(name: "RFC 7578")
+                .target(name: "RFC 7578"),
+                .target(name: "RFC 7578 Foundation Integration"),
+                .product(name: "RFC 2045", package: "swift-rfc-2045"),
+                .product(name: "RFC 2183", package: "swift-rfc-2183"),
             ]
         ),
     ],

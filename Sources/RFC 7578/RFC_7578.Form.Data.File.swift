@@ -3,7 +3,7 @@ public import RFC_2183
 
 extension RFC_7578.Form.Data {
 
-    public struct File: Hashable, Sendable, Codable {
+    public struct File: Hashable, Sendable {
 
         public let fieldName: String
 

@@ -1,3 +1,4 @@
+import Byte
 import RFC_2045
 import RFC_2046
 import RFC_2183
@@ -18,7 +19,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
         headers.contentType = contentType
         return RFC_2046.BodyPart(
             headers: headers,
-            content: RFC_2046.BodyPart.Content(content.map { Byte($0) })
+            content: RFC_2046.BodyPart.Content(content.map(Byte.init(bitPattern:)))
         )
     }
 
@@ -44,7 +45,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
         headers.contentType = contentType
         return RFC_2046.BodyPart(
             headers: headers,
-            content: RFC_2046.BodyPart.Content(content.map { Byte($0) })
+            content: RFC_2046.BodyPart.Content(content.map(Byte.init(bitPattern:)))
         )
     }
 
@@ -78,7 +79,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
             #expect(decoded.fields.isEmpty)
             let file = try #require(decoded.file(named: "avatar"))
             #expect(file.fieldName == "avatar")
-            #expect(String(file.filename) == "photo.jpg")
+            #expect(file.filename.rawValue == "photo.jpg")
             #expect(file.contentType?.type == "image")
             #expect(file.contentType?.subtype == "jpeg")
             #expect(file.content == bytes)
@@ -104,7 +105,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
 
             let files = decoded.files(named: "attachments")
             #expect(files.count == 2)
-            #expect(files.map { String($0.filename) } == ["a.txt", "b.txt"])
+            #expect(files.map(\.filename.rawValue) == ["a.txt", "b.txt"])
         }
 
         @Test
