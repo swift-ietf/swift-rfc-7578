@@ -16,7 +16,17 @@ extension RFC_7578.Form.Data.File: Encodable, Decodable {
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let fieldName = try container.decode(String.self, forKey: .fieldName)
-        let filename = try container.decode(RFC_2183.Filename.self, forKey: .filename)
+        let filenameString = try container.decode(String.self, forKey: .filename)
+        let filename: RFC_2183.Filename
+        do throws(RFC_2183.Filename.Error) {
+            filename = try RFC_2183.Filename(filenameString)
+        } catch {
+            throw DecodingError.dataCorruptedError(
+                forKey: .filename,
+                in: container,
+                debugDescription: String(describing: error)
+            )
+        }
         let contentType = try container.decodeIfPresent(
             RFC_2045.ContentType.self,
             forKey: .contentType
