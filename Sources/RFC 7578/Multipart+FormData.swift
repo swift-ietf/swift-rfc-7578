@@ -14,7 +14,7 @@ extension RFC_2046.Multipart {
 
         for (name, value) in fields.sorted(by: { $0.key < $1.key }) {
             var headers = RFC_2046.BodyPart.Headers()
-            headers.contentDisposition = RFC_2183.ContentDisposition.formData(name: name)
+            headers.contentDisposition = RFC_2183.ContentDisposition.formData(name: try fieldName(name))
             headers.contentType = .textPlainUTF8
             parts.append(
                 RFC_2046.BodyPart(
@@ -28,7 +28,7 @@ extension RFC_2046.Multipart {
 
             var headers = RFC_2046.BodyPart.Headers()
             headers.contentDisposition = RFC_2183.ContentDisposition.formData(
-                name: file.fieldName,
+                name: try fieldName(file.fieldName),
                 filename: file.filename
             )
             headers.contentType = file.contentType
@@ -57,6 +57,14 @@ extension RFC_2046.Multipart {
         )
     }
 
+    private static func fieldName(_ name: String) throws(Error) -> RFC_2183.ParameterValue {
+        do throws(RFC_2183.ParameterValue.Error) {
+            return try RFC_2183.ParameterValue(name)
+        } catch {
+            throw .invalidFormat("\(error)")
+        }
+    }
+
     public func formData() throws(RFC_7578.Form.Data.Decoded.Error)
         -> RFC_7578.Form.Data.Decoded
     {
@@ -82,7 +90,7 @@ extension RFC_2046.Multipart {
                 continue
             }
 
-            fields[fieldName] = part.content.description
+            fields[fieldName.value] = part.content.description
         }
 
         return fields

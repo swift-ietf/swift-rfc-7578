@@ -80,7 +80,7 @@ extension `README Verification`.Unit {
         let firstPart = formData.parts.first!
         let disposition = firstPart.headers.contentDisposition!
 
-        #expect(disposition.name == "field\"name")
+        #expect(disposition.name?.value == "field\"name")
     }
 
     @Test

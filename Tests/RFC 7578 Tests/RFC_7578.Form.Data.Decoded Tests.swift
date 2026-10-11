@@ -15,7 +15,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
         contentType: RFC_2045.ContentType? = nil
     ) -> RFC_2046.BodyPart {
         var headers = RFC_2046.BodyPart.Headers()
-        headers.contentDisposition = RFC_2183.ContentDisposition.formData(name: name)
+        headers.contentDisposition = RFC_2183.ContentDisposition.formData(name: RFC_2183.ParameterValue(__unchecked: (), rawValue: name))
         headers.contentType = contentType
         return RFC_2046.BodyPart(
             headers: headers,
@@ -39,7 +39,7 @@ struct `RFC_7578 Form Data Decoded Tests` {
     ) throws -> RFC_2046.BodyPart {
         var headers = RFC_2046.BodyPart.Headers()
         headers.contentDisposition = RFC_2183.ContentDisposition.formData(
-            name: name,
+            name: try RFC_2183.ParameterValue(name),
             filename: try RFC_2183.Filename(filename)
         )
         headers.contentType = contentType

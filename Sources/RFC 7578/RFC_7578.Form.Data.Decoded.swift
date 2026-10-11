@@ -109,7 +109,7 @@ extension RFC_7578.Form.Data.Decoded {
 
             throw .invalidDispositionType(disposition.type.rawValue)
         }
-        guard let name = disposition.name, !name.isEmpty else {
+        guard let name = disposition.name?.value, !name.isEmpty else {
             throw .missingFieldName
         }
         return (name, disposition.filename)
@@ -127,7 +127,7 @@ extension RFC_7578.Form.Data.Decoded {
             guard
                 let disposition = part.headers.contentDisposition,
                 disposition.type == RFC_2183.DispositionType.formData,
-                disposition.name == charsetFieldName,
+                disposition.name?.value == charsetFieldName,
                 disposition.filename == nil
             else {
                 continue
