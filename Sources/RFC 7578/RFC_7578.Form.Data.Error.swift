@@ -1,6 +1,6 @@
 extension RFC_7578.Form.Data {
 
-    public enum Error: Swift.Error, Hashable, Sendable {
+    public enum Error: Swift::Error, Hashable, Sendable {
         case emptyFieldName
     }
 }
