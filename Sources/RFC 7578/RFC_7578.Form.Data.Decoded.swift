@@ -57,11 +57,10 @@ extension RFC_7578.Form.Data.Decoded {
                     ?? .utf8
                 guard let value = Self.text(part.content.rawValue, charset: charset)
                 else {
-                    if Self.isSupported(charset) {
+                    guard !Self.isSupported(charset) else {
                         throw .invalidTextContent(fieldName: name)
-                    } else {
-                        throw .unsupportedCharset(charset.rawValue)
                     }
+                    throw .unsupportedCharset(charset.rawValue)
                 }
                 let field: RFC_7578.Form.Data.Field
                 do throws(RFC_7578.Form.Data.Error) {

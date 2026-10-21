@@ -1,8 +1,8 @@
-public import RFC_7578
 import RFC_2045
 import RFC_2045_Foundation_Integration
 import RFC_2183
 import RFC_2183_Foundation_Integration
+public import RFC_7578
 
 extension RFC_7578.Form.Data.File: Encodable, Decodable {
 
