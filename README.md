@@ -1,38 +1,13 @@
 # swift-rfc-7578
 
-Domain model for RFC 7578, Returning Values from Forms (`multipart/form-data`), layered on [swift-rfc-2046](https://github.com/swift-ietf/swift-rfc-2046): `RFC_2046.Multipart.formData(fields:files:boundary:)` builds a `form-data` multipart whose parts carry `RFC_2183.ContentDisposition.formData(name:filename:)` headers, `RFC_7578.Form.Data.File` is a validated upload (non-empty field name, `RFC_2183.Filename`, optional `RFC_2045.ContentType`, raw octets per section 4.7), and `RFC_7578.Form.Data.Decoded` projects the parts of a received multipart back into `Field`s and `File`s, honouring the part charset and the `_charset_` default of section 5.1.1. The `RFC 7578 Foundation Integration` product bridges `Field`, `File` and `Decoded` to `Codable`. Wire parsing and serialization of the multipart body live in [swift-rfc-2046-coder](https://github.com/swift-ietf/swift-rfc-2046-coder); the text form of the disposition header lives in [swift-rfc-2183-coder](https://github.com/swift-ietf/swift-rfc-2183-coder).
+Use this package when you build or read a `multipart/form-data` body, such as an HTML form submission with file uploads. To build one, call `RFC_2046.Multipart.formData(fields:files:boundary:)` with `RFC_7578.Form.Data.File` values for the uploads. To read one, start from `RFC_7578.Form.Data.Decoded`, which splits the parts into text fields and files. For other multipart subtypes, use swift-rfc-2046 directly. For `Codable`, add the `RFC 7578 Foundation Integration` product.
 
-```swift
-import RFC_2045
-import RFC_2046
-import RFC_2183
-import RFC_7578
+## Laws
 
-let avatar = try RFC_7578.Form.Data.File(
-    fieldName: "avatar",
-    filename: try RFC_2183.Filename("photo.jpg"),
-    contentType: try RFC_2045.ContentType("image/jpeg"),
-    content: [0xFF, 0xD8, 0xFF, 0xE0]
-)
-
-let multipart = try RFC_2046.Multipart.formData(
-    fields: ["username": "john_doe", "email": "john@example.com"],
-    files: [avatar]
-)
-multipart.subtype                                    // .formData
-multipart.parts.count                                // 3
-multipart.parts.first?.headers.contentDisposition?.name   // "email"
-
-let decoded = try multipart.formData()
-decoded["username"]                                  // "john_doe"
-decoded.file(named: "avatar")?.filename.rawValue     // "photo.jpg"
-```
-
-```swift
-import Foundation
-import RFC_7578
-import RFC_7578_Foundation_Integration
-
-let json = try JSONEncoder().encode(decoded)
-try JSONDecoder().decode(RFC_7578.Form.Data.Decoded.self, from: json) == decoded   // true
-```
+- When building, text fields are written first, sorted by name, each as `text/plain` in UTF-8. Files follow in the order given.
+- Without an explicit boundary, the boundary is built from the number of parts and the first part's media type. It is not random, so pass your own when the content could contain it.
+- When reading, every part must have a `form-data` Content-Disposition with a non-empty name. A part with a filename becomes a file and keeps its bytes as they are. Every other part becomes a text field.
+- A text field is decoded with the charset of its own Content-Type. If it has none, the value of a `_charset_` field is used, and otherwise UTF-8. The `_charset_` field is still returned as a field.
+- The charsets understood are UTF-8, US-ASCII, ISO-8859-1 and UTF-16 (BE, LE, or with a byte order mark, big-endian when there is none). Text that isn't valid in its charset fails, rather than being repaired.
+- Fields and files keep the order of the parts, including repeated names. `RFC_7578.Form.Data.Decoded` subscripted by name returns the first value.
+- With `RFC 7578 Foundation Integration`, a field encodes as its `name` and `value`, a file as its `fieldName`, `filename`, optional `contentType` and `content` bytes, and a decoded form as its `fields` and `files`. An empty name or an unsafe filename such as `../x` fails to decode.
