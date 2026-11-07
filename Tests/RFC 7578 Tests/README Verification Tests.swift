@@ -5,14 +5,18 @@ import Testing
 
 @testable import RFC_7578
 
-@Suite
-struct `README Verification` {
-    @Suite struct Unit {}
-    @Suite struct `Edge Case` {}
-    @Suite struct Integration {}
+enum `README Verification Tests` {}
+
+extension `README Verification Tests` {
+    @Suite
+    struct `README Verification` {
+        @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
+    }
 }
 
-extension `README Verification`.Unit {
+extension `README Verification Tests`.`README Verification`.Unit {
     @Test
     func `Example from source: Creating Form Data with Fields`() throws {
 
