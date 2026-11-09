@@ -40,14 +40,22 @@ extension RFC_2046.Multipart {
             )
         }
 
-        let effectiveBoundaryString =
-            boundary
-            ?? "----FormData\(parts.count)\(parts.first?.headers.contentType?.type ?? "data")"
         let effectiveBoundary: RFC_2046.Boundary
-        do throws(RFC_2046.Boundary.Error) {
-            effectiveBoundary = try RFC_2046.Boundary(effectiveBoundaryString)
-        } catch {
-            throw .invalidFormat("\(error)")
+        if let boundary {
+            do throws(RFC_2046.Boundary.Error) {
+                effectiveBoundary = try RFC_2046.Boundary(boundary)
+            } catch {
+                throw .invalidFormat("\(error)")
+            }
+            guard !occurs(effectiveBoundary, in: parts) else {
+                throw .invalidFormat("boundary '\(boundary)' occurs in the content of a part")
+            }
+        } else {
+            var candidate = RFC_2046.Boundary.random()
+            while occurs(candidate, in: parts) {
+                candidate = RFC_2046.Boundary.random()
+            }
+            effectiveBoundary = candidate
         }
 
         return try Self(
@@ -55,6 +63,16 @@ extension RFC_2046.Multipart {
             parts: parts,
             boundary: effectiveBoundary
         )
+    }
+
+    private static func occurs(
+        _ boundary: RFC_2046.Boundary,
+        in parts: [RFC_2046.BodyPart]
+    ) -> Bool {
+        let delimiter = [Byte]("--\(boundary.rawValue)".utf8.map(Byte.init(bitPattern:)))
+        return parts.contains { part in
+            part.content.rawValue.firstRange(of: delimiter) != nil
+        }
     }
 
     private static func fieldName(_ name: String) throws(Error) -> RFC_2183.ParameterValue {
@@ -69,30 +87,5 @@ extension RFC_2046.Multipart {
         -> RFC_7578.Form.Data.Decoded
     {
         try RFC_7578.Form.Data.Decoded(self)
-    }
-}
-
-extension RFC_2046.Multipart {
-
-    public func extractFormFields() -> [String: String] {
-        var fields: [String: String] = [:]
-
-        for part in parts {
-
-            guard let disposition = part.headers.contentDisposition,
-                disposition.type == RFC_2183.DispositionType.formData,
-                let fieldName = disposition.name
-            else {
-                continue
-            }
-
-            if disposition.filename != nil {
-                continue
-            }
-
-            fields[fieldName.value] = part.content.description
-        }
-
-        return fields
     }
 }

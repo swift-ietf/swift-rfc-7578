@@ -351,6 +351,32 @@ extension `RFC_7578.Form.Data.Decoded Tests` {
                 #expect(decoded.fields(named: "absent").isEmpty)
                 #expect(decoded.files(named: "absent").isEmpty)
             }
+
+            @Test
+            func `Default boundary does not occur in the content`() throws {
+                let content = "--------FormData1text and ----Part_ prefix"
+                let multipart = try RFC_2046.Multipart.formData(fields: ["a": content])
+                let delimiter = "--\(multipart.boundary.rawValue)"
+                #expect(!content.contains(delimiter))
+                #expect(try multipart.formData()["a"] == content)
+            }
+
+            @Test
+            func `Default boundary is not predictable`() throws {
+                let first = try RFC_2046.Multipart.formData(fields: ["a": "1"])
+                let second = try RFC_2046.Multipart.formData(fields: ["a": "1"])
+                #expect(first.boundary.rawValue != second.boundary.rawValue)
+            }
+
+            @Test
+            func `Explicit boundary occurring in the content is rejected`() {
+                #expect(throws: RFC_2046.Multipart.Error.self) {
+                    try RFC_2046.Multipart.formData(
+                        fields: ["a": "before\r\n--fixed\r\nafter"],
+                        boundary: "fixed"
+                    )
+                }
+            }
         }
 
         @Suite
@@ -393,7 +419,6 @@ extension `RFC_7578.Form.Data.Decoded Tests` {
                     uniquingKeysWith: { first, _ in first }
                 )
                 #expect(mapping == ["a": "1", "b": "two", "c": "✓"])
-                #expect(mapping == multipart.extractFormFields())
             }
         }
     }
