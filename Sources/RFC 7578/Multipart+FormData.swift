@@ -69,7 +69,7 @@ extension RFC_2046.Multipart {
         _ boundary: RFC_2046.Boundary,
         in parts: [RFC_2046.BodyPart]
     ) -> Bool {
-        let delimiter = [Byte]("--\(boundary.rawValue)".utf8.map(Byte.init(bitPattern:)))
+        let delimiter = [Byte]("--\(boundary)".utf8.map(Byte.init(bitPattern:)))
         return parts.contains { part in
             part.content.rawValue.firstRange(of: delimiter) != nil
         }

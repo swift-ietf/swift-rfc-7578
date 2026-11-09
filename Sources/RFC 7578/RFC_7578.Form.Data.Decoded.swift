@@ -146,7 +146,7 @@ extension RFC_7578.Form.Data.Decoded {
 
     private static func isSupported(_ charset: RFC_2045.Charset) -> Bool {
 
-        switch charset.rawValue.uppercased() {
+        switch charset.description.uppercased() {
         case "UTF-8", "US-ASCII", "ASCII", "ISO-8859-1", "LATIN1",
             "UTF-16", "UTF-16BE", "UTF-16LE":
             return true
@@ -162,7 +162,7 @@ extension RFC_7578.Form.Data.Decoded {
     ) -> String? {
         let octets = bytes.map(\.bitPattern)
 
-        switch charset.rawValue.uppercased() {
+        switch charset.description.uppercased() {
         case "UTF-8":
             return String(validating: octets, as: UTF8.self)
 
